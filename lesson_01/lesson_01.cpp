@@ -132,6 +132,7 @@ class PhoneBook
 public:
     PhoneBook(std::ifstream& fin);
     void sort_by_name();
+    void sort_by_phone();
     std::tuple<std::string, PhoneNumber> get_phone_number(std::string name) const;
     void change_phone_number(Person& p, PhoneNumber& pn);
 
@@ -214,6 +215,14 @@ void PhoneBook::sort_by_name()
             { return a.first < b.first; });
 }
 
+void PhoneBook::sort_by_phone()
+{
+    std::sort(phone_book.begin(), phone_book.end(),
+            [](const std::pair<Person, PhoneNumber>& a, const std::pair<Person, PhoneNumber>& b) 
+            { return a.second < b.second; });
+}
+
+
 // согласно заданию нужно возвращать кортеж, хотя можно и пару (тем более, что это специальный вид кортежа)
 // также в условии не указано, при наличии нескольких совпадений фамилии нужно ли возвращать первый найденный номер
 // или последний, поэтому в данном случае возвращается первый найденный номер
@@ -262,23 +271,29 @@ int main()
     PhoneBook pb(fin);
     std::cout << pb << std::endl;
 
+    std::cout << "-------- Sorted by Phone ------------\n";
+    pb.sort_by_phone();
+    std::cout << pb << std::endl;
+
+    std::cout << "-------- Sorted by Name ------------\n";
     pb.sort_by_name();
     std::cout << pb << std::endl;
 
-    auto phone = pb.get_phone_number("Potter");
-    if (std::get<0>(phone) == "not found") {
-        std::cout << std::get<0>(phone) << std::endl;
-    } else {
-        std::cout << std::get<0>(phone) << " " << std::get<1>(phone) << std::endl;
+    std::cout << "-------- Get Phone Number ------------\n";
+    auto print_phone_number = [&pb] (const std::string last_name) {
+        std::cout << last_name << "\t";
+        auto answer = pb.get_phone_number(last_name);
+        if (std::get<0>(answer).empty()) {
+            std::cout << std::get<1>(answer) << std::endl;
+        } else {
+            std::cout << std::get<0>(answer) << std::endl;
+        }
     }
 
-    phone = pb.get_phone_number("Malfoy");
-    if (std::get<0>(phone) == "not found") {
-        std::cout << std::get<0>(phone) << std::endl;
-    } else {
-        std::cout << std::get<0>(phone) << " " << std::get<1>(phone) << std::endl;
-    }
+    print_phone_number("Potter");
+    print_phone_number("Malfoy");
 
+    std::cout << "-------- Change Phone Number ------------\n";
     Person person("Harry", "Potter");
     PhoneNumber number(11, 22, "333");
     pb.change_phone_number(person, number);
